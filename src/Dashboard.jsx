@@ -1,34 +1,9 @@
-
 import { useEffect, useState } from "react";
 import "./Dashboard.css";
 import { apiRequest } from "./services/api";
-
-function getFileIcon(fileName = "") {
-  const extension = fileName.split(".").pop().toLowerCase();
-
-  const icons = {
-    pdf: "📕",
-    doc: "📘",
-    docx: "📘",
-    txt: "📄",
-    csv: "📊",
-    xls: "📊",
-    xlsx: "📊",
-    jpg: "🖼️",
-    jpeg: "🖼️",
-    png: "🖼️",
-    gif: "🖼️",
-    mp4: "🎬",
-    zip: "📦",
-    rar: "📦",
-    java: "☕",
-    js: "📜",
-    jsx: "📜",
-    json: "📋"
-  };
-
-  return icons[extension] || "📄";
-}
+import CloudFileList from "./CloudFileList";
+import Trash from "./Trash";
+import "./css/CloudFileList.css";
 
 function Dashboard() {
   const [rootId, setRootId] = useState("");
@@ -45,6 +20,7 @@ function Dashboard() {
 
   const [folderName, setFolderName] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState("my-files");
 
   async function loadContents(id) {
     const data = await apiRequest(`/folders/${id}/contents`);
@@ -172,29 +148,49 @@ function Dashboard() {
         <aside className="sidebar">
           <div className="brand">
             <div className="brand-icon">☁</div>
-            <span>Cloud<span className="brand-highlight">Vault</span></span>
+            <span>
+            Cloud<span className="brand-highlight">Vault</span>
+          </span>
           </div>
 
           <div className="sidebar-section">
             <p className="sidebar-label">WORKSPACE</p>
 
             <nav className="sidebar-nav">
-              <button className="nav-item active" onClick={goToRoot}>
+              <button
+                  className={`nav-item ${activeTab === "my-files" ? "active" : ""}`}
+                  onClick={() => {
+                    setActiveTab("my-files");
+                    goToRoot();
+                  }}
+              >
                 <span className="nav-icon">▦</span>
                 <span>My Files</span>
               </button>
 
-              <button className="nav-item" type="button">
+              <button
+                  className={`nav-item ${activeTab === "recent" ? "active" : ""}`}
+                  type="button"
+                  onClick={() => setActiveTab("recent")}
+              >
                 <span className="nav-icon">◷</span>
                 <span>Recent</span>
               </button>
 
-              <button className="nav-item" type="button">
+              <button
+                  className={`nav-item ${activeTab === "starred" ? "active" : ""}`}
+                  type="button"
+                  onClick={() => setActiveTab("starred")}
+              >
                 <span className="nav-icon">☆</span>
                 <span>Starred</span>
               </button>
 
-              <button className="nav-item" type="button">
+              <button
+                  className={`nav-item ${activeTab === "trash" ? "active" : ""}`}
+                  type="button"
+                  onClick={() => setActiveTab("trash")}
+              >
                 <span className="nav-icon">▤</span>
                 <span>Trash</span>
               </button>
@@ -207,12 +203,15 @@ function Dashboard() {
                 <span>Storage</span>
                 <span className="storage-icon">☁</span>
               </div>
+
               <p className="storage-description">
                 Your files, all in one place.
               </p>
+
               <div className="storage-track">
                 <div className="storage-fill"></div>
               </div>
+
               <small>Storage overview coming soon</small>
             </div>
 
@@ -242,179 +241,203 @@ function Dashboard() {
             </div>
           </header>
 
-          <section className="dashboard-content">
+          {/* Conditional content */}
+          {activeTab === "trash" ? (
 
-            <div className="welcome-section">
-              <div>
-                <p className="eyebrow">YOUR WORKSPACE</p>
-                <h1>{currentFolderName}</h1>
-                <p className="welcome-description">
-                  Manage your files and folders in one place.
-                </p>
-              </div>
+              <Trash/>
 
-              <div className="header-actions">
-                <button
-                    className="secondary-button"
-                    onClick={() => {
-                      setShowForm(!showForm);
-                      setError("");
-                    }}
-                >
-                  <span>＋</span> New Folder
-                </button>
+          ) : activeTab === "my-files" ? (
 
-                <label className={`primary-button ${uploading ? "disabled" : ""}`}>
-                  <span>↑</span>
-                  {uploading ? "Uploading..." : "Upload File"}
-                  <input
-                      type="file"
-                      hidden
-                      disabled={uploading}
-                      onChange={uploadFile}
-                  />
-                </label>
-              </div>
-            </div>
+              <section className="dashboard-content">
 
-            <div className="breadcrumb">
-              <button onClick={goToRoot}>My Files</button>
-              <span className="breadcrumb-separator">/</span>
-              <strong>{currentFolderName}</strong>
-            </div>
-
-            {error && (
-                <div className="alert-message error-message">
-                  <span>!</span>
-                  {error}
-                </div>
-            )}
-
-            {success && (
-                <div className="alert-message success-message">
-                  <span>✓</span>
-                  {success}
-                </div>
-            )}
-
-            {showForm && (
-                <form className="folder-form" onSubmit={createFolder}>
-                  <div className="folder-form-info">
-                    <span className="form-folder-icon">📁</span>
-                    <div>
-                      <strong>Create a new folder</strong>
-                      <small>Give your folder a name to get started.</small>
-                    </div>
+                <div className="welcome-section">
+                  <div>
+                    <p className="eyebrow">YOUR WORKSPACE</p>
+                    <h1>{currentFolderName}</h1>
+                    <p className="welcome-description">
+                      Manage your files and folders in one place.
+                    </p>
                   </div>
 
-                  <input
-                      type="text"
-                      placeholder="Enter folder name"
-                      value={folderName}
-                      onChange={(e) => setFolderName(e.target.value)}
-                      autoFocus
-                      required
-                  />
+                  <div className="header-actions">
+                    <button
+                        className="secondary-button"
+                        onClick={() => {
+                          setShowForm(!showForm);
+                          setError("");
+                        }}
+                    >
+                      <span>＋</span> New Folder
+                    </button>
 
-                  <button className="primary-button" type="submit">
-                    Create Folder
-                  </button>
+                    <label className={`primary-button ${uploading ? "disabled" : ""}`}>
+                      <span>↑</span>
+                      {uploading ? "Uploading..." : "Upload File"}
 
-                  <button
-                      className="cancel-button"
-                      type="button"
-                      onClick={() => {
-                        setShowForm(false);
-                        setFolderName("");
-                      }}
-                  >
-                    Cancel
-                  </button>
-                </form>
-            )}
-
-            {loading ? (
-                <div className="loading-state">
-                  <div className="loader"></div>
-                  <p>Loading your files...</p>
+                      <input
+                          type="file"
+                          hidden
+                          disabled={uploading}
+                          onChange={uploadFile}
+                      />
+                    </label>
+                  </div>
                 </div>
-            ) : (
-                <>
-                  <section className="content-section">
-                    <div className="section-heading">
-                      <div>
-                        <h2>Folders</h2>
-                        <p>{folders.length} folders</p>
-                      </div>
+
+                <div className="breadcrumb">
+                  <button onClick={goToRoot}>My Files</button>
+                  <span className="breadcrumb-separator">/</span>
+                  <strong>{currentFolderName}</strong>
+                </div>
+
+                {error && (
+                    <div className="alert-message error-message">
+                      <span>!</span>
+                      {error}
                     </div>
+                )}
 
-                    {folders.length === 0 ? (
-                        <div className="empty-state compact-empty">
-                          <span className="empty-icon">📁</span>
-                          <p>No folders here yet</p>
-                          <small>Create a folder to organize your files.</small>
-                        </div>
-                    ) : (
-                        <div className="folder-grid">
-                          {folders.map((folder) => (
-                              <button
-                                  key={folder.folderId}
-                                  className="folder-card"
-                                  onClick={() => openFolder(folder)}
-                              >
-                                <div className="folder-card-top">
-                                  <span className="folder-visual">📁</span>
-                                  <span className="card-menu">···</span>
-                                </div>
-                                <strong>{folder.folderName}</strong>
-                                <small>Folder</small>
-                              </button>
-                          ))}
-                        </div>
-                    )}
-                  </section>
-
-                  <section className="content-section files-section">
-                    <div className="section-heading">
-                      <div>
-                        <h2>Files</h2>
-                        <p>{files.length} files</p>
-                      </div>
+                {success && (
+                    <div className="alert-message success-message">
+                      <span>✓</span>
+                      {success}
                     </div>
+                )}
 
-                    {files.length === 0 ? (
-                        <div className="empty-state">
-                          <span className="empty-icon">📄</span>
-                          <p>No files here yet</p>
-                          <small>Upload a file to see it here.</small>
+                {showForm && (
+                    <form className="folder-form" onSubmit={createFolder}>
+                      <div className="folder-form-info">
+                        <span className="form-folder-icon">📁</span>
+                        <div>
+                          <strong>Create a new folder</strong>
+                          <small>Give your folder a name to get started.</small>
                         </div>
-                    ) : (
-                        <div className="file-grid">
-                          {files.map((file) => (
-                              <div className="file-card" key={file.fileId}>
-                                <div className="file-preview">
-                                  <span>{getFileIcon(file.fileName)}</span>
-                                </div>
-                                <div className="file-info">
-                                  <strong title={file.fileName}>
-                                    {file.fileName}
-                                  </strong>
-                                  <small>File</small>
-                                </div>
-                              </div>
-                          ))}
+                      </div>
+
+                      <input
+                          type="text"
+                          placeholder="Enter folder name"
+                          value={folderName}
+                          onChange={(e) => setFolderName(e.target.value)}
+                          autoFocus
+                          required
+                      />
+
+                      <button className="primary-button" type="submit">
+                        Create Folder
+                      </button>
+
+                      <button
+                          className="cancel-button"
+                          type="button"
+                          onClick={() => {
+                            setShowForm(false);
+                            setFolderName("");
+                          }}
+                      >
+                        Cancel
+                      </button>
+                    </form>
+                )}
+
+                {loading ? (
+                    <div className="loading-state">
+                      <div className="loader"></div>
+                      <p>Loading your files...</p>
+                    </div>
+                ) : (
+                    <>
+                      <section className="content-section">
+                        <div className="section-heading">
+                          <div>
+                            <h2>Folders</h2>
+                            <p>{folders.length} folders</p>
+                          </div>
                         </div>
-                    )}
-                  </section>
-                </>
-            )}
 
-            <footer className="dashboard-footer">
-              <span>CloudVault</span>
-              <span>Your files. Your space.</span>
-            </footer>
+                        {folders.length === 0 ? (
+                            <div className="empty-state compact-empty">
+                              <span className="empty-icon">📁</span>
+                              <p>No folders here yet</p>
+                              <small>Create a folder to organize your files.</small>
+                            </div>
+                        ) : (
+                            <div className="folder-grid">
+                              {folders.map((folder) => (
+                                  <button
+                                      key={folder.folderId}
+                                      className="folder-card"
+                                      onClick={() => openFolder(folder)}
+                                  >
+                                    <div className="folder-card-top">
+                                      <span className="folder-visual">📁</span>
+                                      <span className="card-menu">···</span>
+                                    </div>
 
-          </section>
+                                    <strong>{folder.folderName}</strong>
+                                    <small>Folder</small>
+                                  </button>
+                              ))}
+                            </div>
+                        )}
+                      </section>
+
+                      <section className="content-section files-section">
+                        <div className="section-heading">
+                          <div>
+                            <h2>Files</h2>
+                            <p>{files.length} files</p>
+                          </div>
+                        </div>
+
+                        {files.length === 0 ? (
+                            <div className="empty-state">
+                              <span className="empty-icon">📄</span>
+                              <p>No files here yet</p>
+                              <small>Upload a file to see it here.</small>
+                            </div>
+                        ) : (
+                            <div className="file-grid">
+                              <CloudFileList
+                                  files={files}
+                                  onFileDeleted={(fileId) => {
+                                    setFiles((prevFiles) =>
+                                        prevFiles.filter(
+                                            (file) => file.fileId !== fileId
+                                        )
+                                    );
+                                    setSuccess("File moved to Trash successfully");
+                                  }}
+                              />
+                            </div>
+                        )}
+                      </section>
+                    </>
+                )}
+
+                <footer className="dashboard-footer">
+                  <span>CloudVault</span>
+                  <span>Your files. Your space.</span>
+                </footer>
+
+              </section>
+
+          ) : activeTab === "recent" ? (
+
+              <section className="dashboard-content">
+                <h1>Recent Files</h1>
+                <p>Your recently accessed files will appear here.</p>
+              </section>
+
+          ) : activeTab === "starred" ? (
+
+              <section className="dashboard-content">
+                <h1>Starred Files</h1>
+                <p>Your starred files will appear here.</p>
+              </section>
+
+          ) : null}
+
         </main>
       </div>
   );
