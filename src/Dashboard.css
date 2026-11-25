@@ -111,6 +111,25 @@ button {
   font-size: 19px;
 }
 
+.star-button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 22px;
+  color: #e5a000;
+  padding: 5px;
+  flex-shrink: 0;
+}
+
+.star-button:hover {
+  transform: scale(1.15);
+}
+
+.file-card {
+  position: relative;
+}
+
+
 .nav-item:hover {
   background: #f3f5fc;
   color: #4267e8;
